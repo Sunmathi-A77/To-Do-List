@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Smart Daily Planner</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h2>📋 Smart Daily Planner</h2>
+        <button id="themeToggle">🌙</button>
+    </header>
+
+    <!-- Progress Bar -->
+    <div class="progress-container">
+        <div id="progressBar"></div>
+    </div>
+    <p id="progressText">0% Completed</p>
+
+    <!-- Task Form -->
+    <div class="form">
+        <input type="text" id="taskText" placeholder="Task name">
+
+        <select id="category">
+            <option>Study</option>
+            <option>Personal</option>
+            <option>Health</option>
+        </select>
+
+        <select id="priority">
+            <option>High</option>
+            <option>Medium</option>
+            <option>Low</option>
+        </select>
+
+        <input type="date" id="deadline">
+
+        <button onclick="addTask()">Add Task</button>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+        <button onclick="showAll()">All</button>
+        <button onclick="showToday()">Today</button>
+    </div>
+
+    <!-- Task List -->
+    <ul id="taskList"></ul>
+
+    <!-- Pomodoro Timer -->
+    <div class="pomodoro">
+        <h3> Pomodoro Timer</h3>
+        <p id="timer">25:00</p>
+        <button onclick="startTimer()">Start</button>
+        <button onclick="resetTimer()">Reset</button>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
