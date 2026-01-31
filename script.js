@@ -1,57 +1,67 @@
 let taskList = document.getElementById("taskList");
-let filterMode = "all";
-let timerInterval;
-let timeLeft = 1 * 60;
 
-document.addEventListener("DOMContentLoaded", () => {
-    renderTasks();
-    loadTheme();
-});
+document.addEventListener("DOMContentLoaded", loadTasks);
 
 function addTask() {
-    if (!taskText.value.trim()) return;
+    let text = document.getElementById("taskText").value.trim();
+    let category = document.getElementById("category").value;
+    let priority = document.getElementById("priority").value;
+    let deadline = document.getElementById("deadline").value;
 
-    let tasks = getTasks();
-    tasks.push({
-        text: taskText.value,
-        category: category.value,
-        priority: priority.value,
-        deadline: deadline.value,
+    if (text === "") {
+        alert("Please enter a task");
+        return;
+    }
+
+    let task = {
+        text,
+        category,
+        priority,
+        deadline,
         completed: false
-    });
+    };
 
-    localStorage.setItem("tasks", JSON.stringify(tasks));
-    taskText.value = "";
-    deadline.value = "";
+    saveTask(task);
     renderTasks();
+    clearInputs();
 }
 
 function renderTasks() {
     taskList.innerHTML = "";
     let tasks = getTasks();
-    let today = new Date().toISOString().split("T")[0];
 
-    let visibleTasks = tasks.filter(t =>
-        filterMode === "today" ? t.deadline === today : true
-    );
-
-    visibleTasks.forEach((task, index) => {
-        let li = document.createElement("li");
-        li.className = `priority-${task.priority}`;
-        if (task.completed) li.classList.add("completed");
-
-        li.innerHTML = `
-            <div onclick="toggleComplete(${index})">
-                <strong>${task.text}</strong><br>
-                ${task.category} | ${task.priority} | ${task.deadline || "No date"}
-            </div>
-            <button onclick="deleteTask(${index})">❌</button>
-        `;
-
-        taskList.appendChild(li);
+    // Auto-sort: Priority → Deadline
+    tasks.sort((a, b) => {
+        let p = { High: 1, Medium: 2, Low: 3 };
+        if (p[a.priority] !== p[b.priority]) {
+            return p[a.priority] - p[b.priority];
+        }
+        return new Date(a.deadline) - new Date(b.deadline);
     });
 
-    updateProgress();
+    tasks.forEach((task, index) => {
+        let li = document.createElement("li");
+        li.classList.add(`priority-${task.priority}`);
+        if (task.completed) li.classList.add("completed");
+
+        let info = document.createElement("div");
+        info.className = "task-info";
+        info.innerHTML = `
+            <strong>${task.text}</strong><br>
+            ${task.category} | ${task.priority} | ${task.deadline || "No deadline"}
+        `;
+
+        info.onclick = () => toggleComplete(index);
+
+        let del = document.createElement("button");
+        del.textContent = "Delete";
+        del.className = "delete";
+        del.onclick = () => deleteTask(index);
+
+        li.appendChild(info);
+        li.appendChild(del);
+        taskList.appendChild(li);
+    });
 }
 
 function toggleComplete(index) {
@@ -68,65 +78,21 @@ function deleteTask(index) {
     renderTasks();
 }
 
-function showToday() {
-    filterMode = "today";
-    renderTasks();
-}
-
-function showAll() {
-    filterMode = "all";
-    renderTasks();
+function saveTask(task) {
+    let tasks = getTasks();
+    tasks.push(task);
+    localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
 function getTasks() {
     return JSON.parse(localStorage.getItem("tasks")) || [];
 }
 
-/* Dark Mode */
-themeToggle.onclick = () => {
-    document.body.classList.toggle("dark");
-    localStorage.setItem("theme", document.body.classList.contains("dark"));
-};
-
-function loadTheme() {
-    if (localStorage.getItem("theme") === "true") {
-        document.body.classList.add("dark");
-    }
+function loadTasks() {
+    renderTasks();
 }
 
-/* Progress Bar */
-function updateProgress() {
-    let tasks = getTasks();
-    let completed = tasks.filter(t => t.completed).length;
-    let percent = tasks.length ? (completed / tasks.length) * 100 : 0;
-    progressBar.style.width = percent + "%";
-    progressText.textContent = Math.round(percent) + "% Completed";
-}
-
-/* Pomodoro Timer */
-function startTimer() {
-    if (timerInterval) return;
-
-    timerInterval = setInterval(() => {
-        timeLeft--;
-        updateTimer();
-
-        if (timeLeft <= 0) {
-            clearInterval(timerInterval);
-            alert("Pomodoro complete! Take a break 😄");
-        }
-    }, 1000);
-}
-
-function resetTimer() {
-    clearInterval(timerInterval);
-    timerInterval = null;
-    timeLeft = 25 * 60;
-    updateTimer();
-}
-
-function updateTimer() {
-    let min = Math.floor(timeLeft / 60);
-    let sec = timeLeft % 60;
-    timer.textContent = `${min}:${sec.toString().padStart(2, "0")}`;
+function clearInputs() {
+    document.getElementById("taskText").value = "";
+    document.getElementById("deadline").value = "";
 }
