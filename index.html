@@ -2,31 +2,28 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Smart Daily Planner</title>
+    <title>Advanced To-Do List</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="container">
-    <h2>📅 Smart Daily Planner</h2>
+<div class="todo-container">
+    <h2>Smart To-Do List</h2>
 
-    <div class="form">
-        <input type="text" id="taskText" placeholder="Enter task">
+    <div class="top-bar">
+        <span id="counter">0/0 Completed</span>
+        <button id="themeBtn">🌗 Theme</button>
+    </div>
 
-        <select id="category">
-            <option value="Study">Study</option>
-            <option value="Personal">Personal</option>
-            <option value="Health">Health</option>
+    <div class="input-section">
+        <input type="text" id="taskInput" placeholder="Task name">
+        <input type="date" id="dateInput">
+        <select id="priorityInput">
+            <option value="Low">Low Priority</option>
+            <option value="Medium">Medium Priority</option>
+            <option value="High">High Priority</option>
         </select>
-
-        <select id="priority">
-            <option value="High">High</option>
-            <option value="Medium">Medium</option>
-            <option value="Low">Low</option>
-        </select>
-
-        <input type="date" id="deadline">
-        <button onclick="addTask()">Add Task</button>
+        <button class="add-btn" id="addBtn">Add Task</button>
     </div>
 
     <ul id="taskList"></ul>

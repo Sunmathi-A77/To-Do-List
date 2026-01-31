@@ -1,98 +1,95 @@
-let taskList = document.getElementById("taskList");
+const taskInput = document.getElementById("taskInput");
+const dateInput = document.getElementById("dateInput");
+const priorityInput = document.getElementById("priorityInput");
+const taskList = document.getElementById("taskList");
+const counter = document.getElementById("counter");
+const addBtn = document.getElementById("addBtn");
+const themeBtn = document.getElementById("themeBtn");
 
 document.addEventListener("DOMContentLoaded", loadTasks);
+addBtn.addEventListener("click", addTask);
+themeBtn.addEventListener("click", toggleTheme);
 
 function addTask() {
-    let text = document.getElementById("taskText").value.trim();
-    let category = document.getElementById("category").value;
-    let priority = document.getElementById("priority").value;
-    let deadline = document.getElementById("deadline").value;
+    const text = taskInput.value.trim();
+    const date = dateInput.value;
+    const priority = priorityInput.value;
 
-    if (text === "") {
+    if (!text) {
         alert("Please enter a task");
         return;
     }
 
-    let task = {
-        text,
-        category,
-        priority,
-        deadline,
-        completed: false
-    };
+    createTask({ text, date, priority, completed: false });
+    saveTasks();
 
-    saveTask(task);
-    renderTasks();
-    clearInputs();
+    taskInput.value = "";
+    dateInput.value = "";
 }
 
-function renderTasks() {
-    taskList.innerHTML = "";
-    let tasks = getTasks();
+function createTask(task) {
+    const li = document.createElement("li");
+    if (task.completed) li.classList.add("completed");
 
-    // Auto-sort: Priority → Deadline
-    tasks.sort((a, b) => {
-        let p = { High: 1, Medium: 2, Low: 3 };
-        if (p[a.priority] !== p[b.priority]) {
-            return p[a.priority] - p[b.priority];
-        }
-        return new Date(a.deadline) - new Date(b.deadline);
+    const info = document.createElement("div");
+    info.className = "task-info";
+    info.innerHTML = `
+        <strong>${task.text}</strong>
+        <span class="priority">${task.priority} | ${task.date || "No date"}</span>
+    `;
+
+    li.addEventListener("click", () => {
+        li.classList.toggle("completed");
+        saveTasks();
     });
 
-    tasks.forEach((task, index) => {
-        let li = document.createElement("li");
-        li.classList.add(`priority-${task.priority}`);
-        if (task.completed) li.classList.add("completed");
+    const del = document.createElement("button");
+    del.textContent = "Delete";
+    del.className = "delete-btn";
 
-        let info = document.createElement("div");
-        info.className = "task-info";
-        info.innerHTML = `
-            <strong>${task.text}</strong><br>
-            ${task.category} | ${task.priority} | ${task.deadline || "No deadline"}
-        `;
-
-        info.onclick = () => toggleComplete(index);
-
-        let del = document.createElement("button");
-        del.textContent = "Delete";
-        del.className = "delete";
-        del.onclick = () => deleteTask(index);
-
-        li.appendChild(info);
-        li.appendChild(del);
-        taskList.appendChild(li);
+    del.addEventListener("click", (e) => {
+        e.stopPropagation();
+        li.remove();
+        saveTasks();
     });
+
+    li.appendChild(info);
+    li.appendChild(del);
+    taskList.appendChild(li);
+
+    updateCounter();
 }
 
-function toggleComplete(index) {
-    let tasks = getTasks();
-    tasks[index].completed = !tasks[index].completed;
+function saveTasks() {
+    const tasks = [];
+    document.querySelectorAll("li").forEach(li => {
+        const info = li.querySelector(".task-info");
+        const text = info.querySelector("strong").textContent;
+        const [priority, dateText] = info.querySelector(".priority").textContent.split(" | ");
+
+        tasks.push({
+            text,
+            priority,
+            date: dateText === "No date" ? "" : dateText,
+            completed: li.classList.contains("completed")
+        });
+    });
     localStorage.setItem("tasks", JSON.stringify(tasks));
-    renderTasks();
-}
-
-function deleteTask(index) {
-    let tasks = getTasks();
-    tasks.splice(index, 1);
-    localStorage.setItem("tasks", JSON.stringify(tasks));
-    renderTasks();
-}
-
-function saveTask(task) {
-    let tasks = getTasks();
-    tasks.push(task);
-    localStorage.setItem("tasks", JSON.stringify(tasks));
-}
-
-function getTasks() {
-    return JSON.parse(localStorage.getItem("tasks")) || [];
+    updateCounter();
 }
 
 function loadTasks() {
-    renderTasks();
+    const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+    tasks.forEach(task => createTask(task));
+    updateCounter();
 }
 
-function clearInputs() {
-    document.getElementById("taskText").value = "";
-    document.getElementById("deadline").value = "";
+function updateCounter() {
+    const total = document.querySelectorAll("li").length;
+    const completed = document.querySelectorAll("li.completed").length;
+    counter.textContent = `${completed}/${total} Completed`;
+}
+
+function toggleTheme() {
+    document.body.classList.toggle("light");
 }
